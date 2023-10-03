@@ -1550,59 +1550,98 @@ function Checkmate(configuration,player,kingsquare){
         diagonalBottomLeft : objectofmovenotation[origin][4]
     }
 
-    // console.log(kingToAttacker[direction],'popopopopo')
-    // for(i in kingToAttacker[direction]){
-    //     console.log(kingToAttacker[direction][i] == checkingSquare,'lol',objectofmovenotation[kingToAttacker[direction][i]][3])
-    //     if(kingToAttacker[direction][i] == checkingSquare){
-    //         break
-    //     }else{
-    //         for(let ii = 0;i<objectofmovenotation[kingToAttacker[direction][i]][3].length;ii++){
-    //             if(configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]] != null && 
-    //                 (configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]].slice(1) == 'q' ||
-    //             configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]].slice(1) == 'r')){
-    //                 console.log('trtrtr',configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]].slice(1))
-    //                 console.log('forward')
-    //             }
-    //             if(configuration[objectofmovenotation[kingToAttacker[direction][i]][2][ii]] != null && 
-    //                 (configuration[objectofmovenotation[kingToAttacker[direction][i]][2][ii]].slice(1) == 'q' ||
-    //             configuration[objectofmovenotation[kingToAttacker[direction][i]][2][ii]].slice(1) == 'r')){
-    //                 console.log('ssssss',configuration[objectofmovenotation[kingToAttacker[direction][i]][2][ii]].slice(1))
-    //                 console.log('back')
-    //             }
-    //             if(configuration[objectofmovenotation[kingToAttacker[direction][i]][1][ii]] != null && 
-    //                 (configuration[objectofmovenotation[kingToAttacker[direction][i]][1][ii]].slice(1) == 'q' ||
-    //             configuration[objectofmovenotation[kingToAttacker[direction][i]][1][ii]].slice(1) == 'r')){
-    //                 console.log('right')
-    //             }
-    //             if(configuration[objectofmovenotation[kingToAttacker[direction][i]][0][ii]] != null && 
-    //                 (configuration[objectofmovenotation[kingToAttacker[direction][i]][0][ii]].slice(1) == 'q' ||
-    //             configuration[objectofmovenotation[kingToAttacker[direction][i]][0][ii]].slice(1) == 'r')){
-    //                 console.log('left')
-    //             }
-    //             if(configuration[objectofmovenotation[kingToAttacker[direction][i]][7][ii]] != null && 
-    //                 (configuration[objectofmovenotation[kingToAttacker[direction][i]][7][ii]].slice(1) == 'q' ||
-    //             configuration[objectofmovenotation[kingToAttacker[direction][i]][7][ii]].slice(1) == 'b')){
-    //                 console.log('topright')
-    //             }
-    //             if(configuration[objectofmovenotation[kingToAttacker[direction][i]][6][ii]] != null && 
-    //                 (configuration[objectofmovenotation[kingToAttacker[direction][i]][6][ii]].slice(1) == 'q' ||
-    //             configuration[objectofmovenotation[kingToAttacker[direction][i]][6][ii]].slice(1) == 'b')){
-    //                 console.log('topleft')
-    //             }
-    //             if(configuration[objectofmovenotation[kingToAttacker[direction][i]][5][ii]] != null && 
-    //                 (configuration[objectofmovenotation[kingToAttacker[direction][i]][5][ii]].slice(1) == 'q' ||
-    //             configuration[objectofmovenotation[kingToAttacker[direction][i]][5][ii]].slice(1) == 'b')){
-    //                 console.log('bottomright')
-    //             }
-    //             if(configuration[objectofmovenotation[kingToAttacker[direction][i]][4][ii]] != null && 
-    //                 (configuration[objectofmovenotation[kingToAttacker[direction][i]][4][ii]].slice(1) == 'q' ||
-    //             configuration[objectofmovenotation[kingToAttacker[direction][i]][4][ii]].slice(1) == 'b')){
-    //                 console.log('bottomleft')
-    //             }
+    
 
-    //         }
-    //     }
+    for(i in kingToAttacker[direction]){
+        if(kingToAttacker[direction][i] == checkingSquare)break
+        console.log('yoyoyouiui',kingToAttacker[direction][i])
+        
+        let originRow = parseInt(kingToAttacker[direction][i].slice(1))
+        let originColumn = parseInt(letters.indexOf(kingToAttacker[direction][i].slice(0,1)))+1
 
-    // }
+        let knightSquares = [[2,1],[2,-1],[1,2],[1,-2],[-2,1],[-2,-1],[-1,2],[-1,-2]]
+
+        for(let ii = 0;ii<knightSquares.length;ii++){
+            let targetRow = originRow+knightSquares[ii][0]
+            let targetColumn = originColumn+knightSquares[ii][1]
+            let posi = toNotation(targetColumn,targetRow)
+
+            
+            if(configuration[posi] == (player+'n')){
+                    if(!Check(possibleconfig(config,posi,kingToAttacker[direction][i],(player+'n')),player)){
+                        console.log('knigt',player+'n',kingToAttacker[direction][i],posi)
+                    }
+            }
+        }
+
+            for(let ii = 0;ii<objectofmovenotation[kingToAttacker[direction][i]][3].length;ii++){
+                if(configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]] != null && 
+                    (configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]] == (player+'q') ||
+                configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]] == (player+'r'))){
+                    console.log('forward')
+                    if(!Check(possibleconfig(config,kingToAttacker[direction][i],objectofmovenotation[kingToAttacker[direction][i]][3][ii],configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]]))){
+                        console.log('nowwwwwww','fore')
+                    }
+                }
+                if(configuration[objectofmovenotation[kingToAttacker[direction][i]][2][ii]] != null && 
+                    (configuration[objectofmovenotation[kingToAttacker[direction][i]][2][ii]] == (player+'q') ||
+                configuration[objectofmovenotation[kingToAttacker[direction][i]][2][ii]] == (player+'r'))){
+                    console.log('back')
+                    if(!Check(possibleconfig(config,kingToAttacker[direction][i],objectofmovenotation[kingToAttacker[direction][i]][2][ii],configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]]))){
+                        console.log('nowwwwwww','back')
+                    }
+                }
+                if(configuration[objectofmovenotation[kingToAttacker[direction][i]][1][ii]] != null && 
+                    (configuration[objectofmovenotation[kingToAttacker[direction][i]][1][ii]] == (player+'q') ||
+                configuration[objectofmovenotation[kingToAttacker[direction][i]][1][ii]] == (player+'r'))){
+                    console.log('right')
+                    if(!Check(possibleconfig(config,kingToAttacker[direction][i],objectofmovenotation[kingToAttacker[direction][i]][1][ii],configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]]))){
+                        console.log('nowwwwwww','righ')
+                    }
+                }
+                if(configuration[objectofmovenotation[kingToAttacker[direction][i]][0][ii]] != null && 
+                    (configuration[objectofmovenotation[kingToAttacker[direction][i]][0][ii]] == (player+'q') ||
+                configuration[objectofmovenotation[kingToAttacker[direction][i]][0][ii]] == (player+'r'))){
+                    console.log('left')
+                    if(!Check(possibleconfig(config,kingToAttacker[direction][i],objectofmovenotation[kingToAttacker[direction][i]][0][ii],configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]]))){
+                        console.log('nowwwwwww','left')
+                    }
+                }
+                if(configuration[objectofmovenotation[kingToAttacker[direction][i]][7][ii]] != null && 
+                    (configuration[objectofmovenotation[kingToAttacker[direction][i]][7][ii]] == (player+'q') ||
+                configuration[objectofmovenotation[kingToAttacker[direction][i]][7][ii]] == (player+'b'))){
+                    console.log('topright')
+                    if(!Check(possibleconfig(config,kingToAttacker[direction][i],objectofmovenotation[kingToAttacker[direction][i]][7][ii],configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]]))){
+                        console.log('nowwwwwww',"toprigh")
+                    }
+                }
+                if(configuration[objectofmovenotation[kingToAttacker[direction][i]][6][ii]] != null && 
+                    (configuration[objectofmovenotation[kingToAttacker[direction][i]][6][ii]] == (player+'q') ||
+                configuration[objectofmovenotation[kingToAttacker[direction][i]][6][ii]] == (player+'b'))){
+                    console.log('topleft')
+                    if(!Check(possibleconfig(config,kingToAttacker[direction][i],objectofmovenotation[kingToAttacker[direction][i]][6][ii],configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]]))){
+                        console.log('nowwwwwww','topleft')
+                    }
+                }
+                if(configuration[objectofmovenotation[kingToAttacker[direction][i]][5][ii]] != null && 
+                    (configuration[objectofmovenotation[kingToAttacker[direction][i]][5][ii]] == (player+'q') ||
+                configuration[objectofmovenotation[kingToAttacker[direction][i]][5][ii]] == (player+'b'))){
+                    console.log('bottomright')
+                    if(!Check(possibleconfig(config,kingToAttacker[direction][i],objectofmovenotation[kingToAttacker[direction][i]][5][ii],configuration[objectofmovenotation[kingToAttacker[direction][i]][5][ii]]))){
+                        console.log('nowwwwwww','bottomright')
+                    }
+                }
+                if(configuration[objectofmovenotation[kingToAttacker[direction][i]][4][ii]] != null && 
+                    (configuration[objectofmovenotation[kingToAttacker[direction][i]][4][ii]] == (player+'q') ||
+                configuration[objectofmovenotation[kingToAttacker[direction][i]][4][ii]] == (player+'b'))){
+                    console.log('bottomleft')
+                    if(!Check(possibleconfig(config,kingToAttacker[direction][i],objectofmovenotation[kingToAttacker[direction][i]][4][ii],configuration[objectofmovenotation[kingToAttacker[direction][i]][4][ii]]))){
+                        console.log('nowwwwwww','bottomleft')
+                    }
+                }
+
+            }
+
+    }
 
 }
