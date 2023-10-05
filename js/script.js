@@ -497,15 +497,19 @@ function canCastle(piece,side,config){
 }
 var truly = 'wo'
 
+var checkingPiece 
+var checkingSquare
+var direction
+
 window.onmouseup = function(e){
     carryHappeneing = 0
     let drop = 1
     let legality = 0
     let playerInChecked 
     let special = 0
-    let checkingPiece 
-    let checkingSquare
-    let direction
+    checkingPiece  = null
+    checkingSquare = null
+    direction = null
     let possicon = possibleconfig(config,originalSquare,isInSquare(e),carryobj)
     if(carryobj && carryobj.slice(0,1) == 'W')playerInChecked = 'B'
     if(carryobj && carryobj.slice(0,1) == 'B')playerInChecked = 'W'
@@ -515,7 +519,6 @@ window.onmouseup = function(e){
     if(carryobj && carryobj.slice(1,2) == 'k'){
         if(carryobj.slice(0,1) == 'W'){
             if(letters.indexOf(originalSquare.slice(0,1)) == (letters.indexOf(isInSquare(e).slice(0,1))-2) && canCastle('Wk','k',config)){
-                console.log('CASTLE')
                 movecount++
                 enpassant = null
                 CastlingRights_Ability(carryobj,originalSquare,isInSquare(e))
@@ -530,7 +533,6 @@ window.onmouseup = function(e){
                 config = currentConifg()
             }
             if(letters.indexOf(originalSquare.slice(0,1)) == (letters.indexOf(isInSquare(e).slice(0,1))+2) && canCastle('Wk','q',config)){
-                console.log('CASTLE')
                 movecount++
                 enpassant = null
                 CastlingRights_Ability(carryobj,originalSquare,isInSquare(e))
@@ -547,7 +549,6 @@ window.onmouseup = function(e){
         }
         if(carryobj.slice(0,1) == 'B'){
             if(letters.indexOf(originalSquare.slice(0,1)) == (letters.indexOf(isInSquare(e).slice(0,1))-2) && canCastle('Bk','k',config)){
-                console.log('CASTLE')
                 movecount++
                 enpassant = null
                 CastlingRights_Ability(carryobj,originalSquare,isInSquare(e))
@@ -562,7 +563,6 @@ window.onmouseup = function(e){
                 config = currentConifg()
             }
             if(letters.indexOf(originalSquare.slice(0,1)) == (letters.indexOf(isInSquare(e).slice(0,1))+2) && canCastle('Bk','q',config)){
-                console.log('CASTLE')
                 movecount++
                 enpassant = null
                 CastlingRights_Ability(carryobj,originalSquare,isInSquare(e))
@@ -599,7 +599,7 @@ window.onmouseup = function(e){
             document.getElementById(originalSquare).removeChild(document.getElementById(carryobj))
             document.getElementById(enpassant.slice(0,1)+(parseInt(enpassant.slice(1))-1)).removeChild(document.getElementById(enpassant.slice(0,1)+(parseInt(enpassant.slice(1))-1)).lastChild)
             document.getElementById(isInSquare(e)).appendChild(createimg(newsrc,carryobj))
-
+            config = currentConifg()
             enpassant = null
         }
 
@@ -620,7 +620,7 @@ window.onmouseup = function(e){
             document.getElementById(originalSquare).removeChild(document.getElementById(carryobj))
             document.getElementById(enpassant.slice(0,1)+(parseInt(enpassant.slice(1))+1)).removeChild(document.getElementById(enpassant.slice(0,1)+(parseInt(enpassant.slice(1))+1)).lastChild)
             document.getElementById(isInSquare(e)).appendChild(createimg(newsrc,carryobj))
-            
+            config = currentConifg()
             enpassant = null
         }
     }
@@ -703,10 +703,13 @@ window.onmouseup = function(e){
     }()
 
     
-
     if(Check(config,playerInChecked)){
         Check(config,playerInChecked,'dooit')
         Checkmate(config,playerInChecked,kingsquare)
+        console.log('check',Checkmate(config,playerInChecked,kingsquare))
+        if(!Checkmate(config,playerInChecked,kingsquare)){
+            console.log('checkmate')
+        }
         let king 
         if(playerInChecked == 'W')king = document.getElementById(wKing)
         if(playerInChecked == 'B')king = document.getElementById(bKing)
@@ -1083,7 +1086,7 @@ function Check(configuration,player,strpos){
         if(configuration[posi] && 
             configuration[posi].slice(0,1) != player &&
             configuration[posi].slice(1,2) == 'n'){
-                if(!strpos){
+                if(strpos){
                     checkingPiece = configuration[posi]
                     checkingSquare =  posi
                 }
@@ -1101,7 +1104,7 @@ function Check(configuration,player,strpos){
         
         if(configuration[forwardSquares[0]] && configuration[forwardSquares[0]].slice(1,2) == 'k'){
                 // checkingPiece = {forwardSquares[i]:configuration[forwardSquares[i]]}
-                if(!strpos){
+                if(strpos){
                     checkingPiece = configuration[forwardSquares[0]]
                     checkingSquare =  forwardSquares[0]
                     direction = 'forwardSquares'
@@ -1113,7 +1116,7 @@ function Check(configuration,player,strpos){
         if(configuration[forwardSquares[poss]] && 
             (configuration[forwardSquares[poss]].slice(1,2) == 'q' || 
             configuration[forwardSquares[poss]].slice(1,2) == 'r')){
-                if(!strpos){
+                if(strpos){
                     checkingPiece = configuration[forwardSquares[poss]]
                     checkingSquare = forwardSquares[poss]
                     direction = 'forwardSquares'
@@ -1131,7 +1134,7 @@ function Check(configuration,player,strpos){
             configuration[backwardSquares[poss]].slice(1,2) == 'b'))break
         
         if(configuration[backwardSquares[0]] && configuration[backwardSquares[0]].slice(1,2) == 'k') {
-            if(!strpos){
+            if(strpos){
                 checkingPiece = configuration[backwardSquares[poss]]
                 checkingSquare = backwardSquares[poss]
                 direction = 'backwardSquares'
@@ -1143,7 +1146,7 @@ function Check(configuration,player,strpos){
         if(configuration[backwardSquares[poss]] && 
             (configuration[backwardSquares[poss]].slice(1,2) == 'q' || 
             configuration[backwardSquares[poss]].slice(1,2) == 'r')){
-                if(!strpos){
+                if(strpos){
                     checkingPiece = configuration[backwardSquares[poss]]
                     checkingSquare = backwardSquares[poss]
                     direction = 'backwardSquares'
@@ -1161,7 +1164,7 @@ function Check(configuration,player,strpos){
             configuration[rightSquares[poss]].slice(1,2) == 'b'))break
         
         if(configuration[rightSquares[0]] && configuration[rightSquares[0]].slice(1,2) == 'k'){
-            if(!strpos){
+            if(strpos){
                 checkingPiece = configuration[rightSquares[poss]]
                 checkingSquare = rightSquares[poss]
                 direction = 'rightSquares'
@@ -1173,7 +1176,7 @@ function Check(configuration,player,strpos){
         if(configuration[rightSquares[poss]] && 
             (configuration[rightSquares[poss]].slice(1,2) == 'q' || 
             configuration[rightSquares[poss]].slice(1,2) == 'r')){
-                if(!strpos){
+                if(strpos){
                     checkingPiece = configuration[rightSquares[poss]]
                     checkingSquare = rightSquares[poss]
                     direction = 'rightSquares'
@@ -1191,7 +1194,7 @@ function Check(configuration,player,strpos){
             configuration[leftSquares[poss]].slice(1,2) == 'b'))break
         
         if(configuration[leftSquares[0]] && configuration[leftSquares[0]].slice(1,2) == 'k') {
-            if(!strpos){
+            if(strpos){
                 checkingPiece = configuration[leftSquares[poss]]
                 checkingSquare = leftSquares[poss]
                 direction = 'leftSquares'
@@ -1203,7 +1206,7 @@ function Check(configuration,player,strpos){
         if(configuration[leftSquares[poss]] && 
             (configuration[leftSquares[poss]].slice(1,2) == 'q' || 
             configuration[leftSquares[poss]].slice(1,2) == 'r')){
-                if(!strpos){
+                if(strpos){
                     checkingPiece = configuration[leftSquares[poss]]
                     checkingSquare = leftSquares[poss]
                     direction = 'leftSquares'
@@ -1220,7 +1223,7 @@ function Check(configuration,player,strpos){
             configuration[diagonalTopRight[poss]].slice(1,2) == 'r'))break
         
         if(configuration[diagonalTopRight[0]] && configuration[diagonalTopRight[0]].slice(1,2) == 'k') {
-            if(!strpos){
+            if(strpos){
                 checkingPiece = configuration[diagonalTopRight[poss]]
                 checkingSquare = diagonalTopRight[poss]
                 direction = 'diagonalTopRight'
@@ -1233,7 +1236,7 @@ function Check(configuration,player,strpos){
             configuration[diagonalTopRight[0]].slice(0,1) != player &&
             configuration[diagonalTopRight[0]].slice(0,1) != 'W' &&
             configuration[diagonalTopRight[0]].slice(1,2) == 'p'){
-                if(!strpos){
+                if(strpos){
                     checkingPiece = configuration[diagonalTopRight[poss]]
                     checkingSquare = diagonalTopRight[poss]
                     direction = 'diagonalTopRight'
@@ -1245,7 +1248,7 @@ function Check(configuration,player,strpos){
         if(configuration[diagonalTopRight[poss]] && 
             (configuration[diagonalTopRight[poss]].slice(1,2) == 'q' || 
             configuration[diagonalTopRight[poss]].slice(1,2) == 'b')){
-                if(!strpos){
+                if(strpos){
                     checkingPiece = configuration[diagonalTopRight[poss]]
                     checkingSquare = diagonalTopRight[poss]
                     direction = 'diagonalTopRight'
@@ -1262,7 +1265,7 @@ function Check(configuration,player,strpos){
             configuration[diagonalTopLeft[poss]].slice(1,2) == 'r'))break
         
         if(configuration[diagonalTopLeft[0]] && configuration[diagonalTopLeft[0]].slice(1,2) == 'k') {
-            if(!strpos){
+            if(strpos){
                 checkingPiece = configuration[diagonalTopLeft[poss]]
                 checkingSquare = diagonalTopLeft[poss]
                 direction = 'diagonalTopLeft'
@@ -1275,7 +1278,7 @@ function Check(configuration,player,strpos){
             configuration[diagonalTopLeft[0]].slice(0,1) != player &&
             configuration[diagonalTopLeft[0]].slice(0,1) != 'W' &&
             configuration[diagonalTopLeft[0]].slice(1,2) == 'p'){
-                if(!strpos){
+                if(strpos){
                     checkingPiece = configuration[diagonalTopLeft[poss]]
                     checkingSquare = diagonalTopLeft[poss]
                     direction = 'diagonalTopLeft'
@@ -1287,7 +1290,7 @@ function Check(configuration,player,strpos){
         if(configuration[diagonalTopLeft[poss]] && 
             (configuration[diagonalTopLeft[poss]].slice(1,2) == 'q' || 
             configuration[diagonalTopLeft[poss]].slice(1,2) == 'b')){
-                if(!strpos){
+                if(strpos){
                     checkingPiece = configuration[diagonalTopLeft[poss]]
                     checkingSquare = diagonalTopLeft[poss]
                     direction = 'diagonalTopLeft'
@@ -1304,7 +1307,7 @@ function Check(configuration,player,strpos){
             configuration[diagonalBottomRight[poss]].slice(1,2) == 'r'))break
         
         if(configuration[diagonalBottomRight[0]] && configuration[diagonalBottomRight[0]].slice(1,2) == 'k') {
-            if(!strpos){
+            if(strpos){
                 checkingPiece = configuration[diagonalBottomRight[poss]]
                 checkingSquare = diagonalBottomRight[poss]
                 direction = 'diagonalBottomRight'
@@ -1318,7 +1321,7 @@ function Check(configuration,player,strpos){
             configuration[diagonalBottomRight[0]].slice(0,1) != player &&
             configuration[diagonalBottomRight[0]].slice(0,1) != 'B' &&
             configuration[diagonalBottomRight[0]].slice(1,2) == 'p'){
-                if(!strpos){
+                if(strpos){
                     checkingPiece = configuration[diagonalBottomRight[poss]]
                     checkingSquare = diagonalBottomRight[poss]
                     direction = 'diagonalBottomRight'
@@ -1331,7 +1334,7 @@ function Check(configuration,player,strpos){
         if(configuration[diagonalBottomRight[poss]] && 
             (configuration[diagonalBottomRight[poss]].slice(1,2) == 'q' || 
             configuration[diagonalBottomRight[poss]].slice(1,2) == 'b')){
-                if(!strpos){
+                if(strpos){
                     checkingPiece = configuration[diagonalBottomRight[poss]]
                     checkingSquare = diagonalBottomRight[poss]
                     direction = 'diagonalBottomRight'
@@ -1348,7 +1351,7 @@ function Check(configuration,player,strpos){
             configuration[diagonalBottomLeft[poss]].slice(1,2) == 'r'))break
         
         if(configuration[diagonalBottomLeft[0]] && configuration[diagonalBottomLeft[0]].slice(1,2) == 'k') {
-            if(!strpos){
+            if(strpos){
                 checkingPiece = configuration[diagonalBottomLeft[poss]]
                 checkingSquare = diagonalBottomLeft[poss]
                 direction = 'diagonalBottomLeft'
@@ -1361,7 +1364,7 @@ function Check(configuration,player,strpos){
             configuration[diagonalBottomLeft[0]].slice(0,1) != player &&
             configuration[diagonalBottomLeft[0]].slice(0,1) != 'B' &&
             configuration[diagonalBottomLeft[0]].slice(1,2) == 'p'){
-                if(!strpos){
+                if(strpos){
                     checkingPiece = configuration[diagonalBottomLeft[poss]]
                     checkingSquare = diagonalBottomLeft[poss]
                     direction = 'diagonalBottomLeft'
@@ -1373,7 +1376,7 @@ function Check(configuration,player,strpos){
         if(configuration[diagonalBottomLeft[poss]] && 
             (configuration[diagonalBottomLeft[poss]].slice(1,2) == 'q' || 
             configuration[diagonalBottomLeft[poss]].slice(1,2) == 'b')){
-                if(!strpos){
+                if(strpos){
                     checkingPiece = configuration[diagonalBottomLeft[poss]]
                     checkingSquare = diagonalBottomLeft[poss]
                     direction = 'diagonalBottomLeft'
@@ -1390,8 +1393,8 @@ function Check(configuration,player,strpos){
 }
 
 function Checkmate(configuration,player,kingsquare){
-    console.log(checkingPiece,'just fine',checkingSquare,direction)
-    console.log(player)
+
+
     if(!player)return
 
     let origin = kingsquare
@@ -1408,7 +1411,6 @@ function Checkmate(configuration,player,kingsquare){
         diagonalBottomLeft : objectofmovenotation[origin][4][0]
     }
 
-    console.log(availableKingSquares[direction],'llllllll')
 
     let capturingSquare = {
         forwardSquares : objectofmovenotation[checkingSquare][3],
@@ -1422,119 +1424,145 @@ function Checkmate(configuration,player,kingsquare){
     }
 
 
+
     //can you escape the check
     for(squares in availableKingSquares){
         if(!availableKingSquares[squares])continue
+        // console.log(availableKingSquares[squares],'eeeee',configuration[availableKingSquares[squares]])
+        // console.log(configuration[availableKingSquares[squares]] == null || configuration[availableKingSquares[squares]].slice(0,1) != player ,'trrr',!Check(possibleconfig(configuration,origin,availableKingSquares[squares],(player+'k')),player) )
 
         if(!Check(possibleconfig(configuration,origin,availableKingSquares[squares],(player+'k')),player)){
             if(configuration[availableKingSquares[squares]] == null || configuration[availableKingSquares[squares]].slice(0,1) != player ){
-                console.log('WOWOWOWOW',availableKingSquares[squares],player)
-                // return true
-                break
+                return true
             }
         }
     }
 
     //can you capture the attacking piece
-     for(i in capturingSquare){
-        for(ii in capturingSquare[i]){
-            if(i == 'forwardSquares'){
-                if(configuration[capturingSquare[i][ii]] == (player+'q') ||
-                configuration[capturingSquare[i][ii]] == (player+'r')){
-                    if(!Check(possibleconfig(config,capturingSquare[i][ii],checkingSquare,configuration[capturingSquare[i][ii]]),configuration[capturingSquare[i][ii]].slice(0,1))){
-                        console.log('not today motherfucker',configuration[capturingSquare[i][ii]],capturingSquare[i][ii])
-                        break
-                    }
-                }
-            }
+    for(t in capturingSquare){
+        let originRow = parseInt(checkingSquare.slice(1))
+        let originColumn = parseInt(letters.indexOf(checkingSquare.slice(0,1)))+1
 
-            if(i == 'backwardSquares'){
-                if(configuration[capturingSquare[i][ii]] == (player+'q') ||
-                configuration[capturingSquare[i][ii]] == (player+'r')){
-                    if(!Check(possibleconfig(config,capturingSquare[i][ii],checkingSquare,configuration[capturingSquare[i][ii]]),configuration[capturingSquare[i][ii]].slice(0,1))){
-                        console.log('not today motherfucker',configuration[capturingSquare[i][ii]],capturingSquare[i][ii])
-                        break
-                    }
-                }
-            }
-            if(i == 'rightSquares'){
-                if(configuration[capturingSquare[i][ii]] == (player+'q') ||
-                configuration[capturingSquare[i][ii]] == (player+'r')){
-                    if(!Check(possibleconfig(config,capturingSquare[i][ii],checkingSquare,configuration[capturingSquare[i][ii]]),configuration[capturingSquare[i][ii]].slice(0,1))){
-                        console.log('not today motherfucker',configuration[capturingSquare[i][ii]],capturingSquare[i][ii])
-                        break
-                    }
-                }
-            }
-            if(i == 'leftSquares'){
-                if(configuration[capturingSquare[i][ii]] == (player+'q') ||
-                configuration[capturingSquare[i][ii]] == (player+'r')){
-                    if(!Check(possibleconfig(config,capturingSquare[i][ii],checkingSquare,configuration[capturingSquare[i][ii]]),configuration[capturingSquare[i][ii]].slice(0,1))){
-                        console.log('not today motherfucker',configuration[capturingSquare[i][ii]],capturingSquare[i][ii])
-                        break
-                    }
-                }
-            }
-            if(i == 'diagonalTopRight'){
-                if(player == 'B' && configuration[capturingSquare[i][0]] == 'Bp'){
-                    if(!Check(possibleconfig(config,capturingSquare[i][0],checkingSquare,configuration[capturingSquare[i][0]]),configuration[capturingSquare[i][0]].slice(0,1))){
-                        console.log('killed by a pawn',configuration[capturingSquare[i][0]],capturingSquare[i][0])
-                    }
-                }
-                if(configuration[capturingSquare[i][ii]] == (player+'q') ||
-                configuration[capturingSquare[i][ii]] == (player+'b')){
-                    if(!Check(possibleconfig(config,capturingSquare[i][ii],checkingSquare,configuration[capturingSquare[i][ii]]),configuration[capturingSquare[i][ii]].slice(0,1))){
-                        console.log('not today motherfucker',configuration[capturingSquare[i][ii]],capturingSquare[i][ii])
-                        break
-                    }
-                }
-            }
-            if(i == 'diagonalTopLeft'){
-                if(player == 'B' && configuration[capturingSquare[i][0]] == 'Bp'){
-                    if(!Check(possibleconfig(config,capturingSquare[i][0],checkingSquare,configuration[capturingSquare[i][0]]),configuration[capturingSquare[i][0]].slice(0,1))){
-                        console.log('killed by a pawn',configuration[capturingSquare[i][0]],capturingSquare[i][0])
-                    }
-                }
-                if(configuration[capturingSquare[i][ii]] == (player+'q') ||
-                configuration[capturingSquare[i][ii]] == (player+'b')){
-                    if(!Check(possibleconfig(config,capturingSquare[i][ii],checkingSquare,configuration[capturingSquare[i][ii]]),configuration[capturingSquare[i][ii]].slice(0,1))){
-                        console.log('not today motherfucker',configuration[capturingSquare[i][ii]],capturingSquare[i][ii])
-                        break
-                    }
-                }
-            }
-            if(i == 'diagonalBottomRight'){
-                if(player == 'W' && configuration[capturingSquare[i][0]] == 'Wp'){
-                    if(!Check(possibleconfig(config,capturingSquare[i][0],checkingSquare,configuration[capturingSquare[i][0]]),configuration[capturingSquare[i][0]].slice(0,1))){
-                        console.log('killed by a pawn',configuration[capturingSquare[i][0]],capturingSquare[i][0])
-                    }
-                }
-                if(configuration[capturingSquare[i][ii]] == (player+'q') ||
-                configuration[capturingSquare[i][ii]] == (player+'b')){
-                    if(!Check(possibleconfig(config,capturingSquare[i][ii],checkingSquare,configuration[capturingSquare[i][ii]]),configuration[capturingSquare[i][ii]].slice(0,1))){
-                        console.log('not today motherfucker',configuration[capturingSquare[i][ii]],capturingSquare[i][ii])
-                        break
-                    }
-                }
-            }
-            if(i == 'diagonalBottomLeft'){
-                if(player == 'W' && configuration[capturingSquare[i][0]] == 'Wp'){
-                    if(!Check(possibleconfig(config,capturingSquare[i][0],checkingSquare,configuration[capturingSquare[i][0]]),configuration[capturingSquare[i][0]].slice(0,1))){
-                        console.log('killed by a pawn',configuration[capturingSquare[i][0]],capturingSquare[i][0])
-                    }
-                }
-                if(configuration[capturingSquare[i][ii]] == (player+'q') ||
-                configuration[capturingSquare[i][ii]] == (player+'b')){
-                    if(!Check(possibleconfig(config,capturingSquare[i][ii],checkingSquare,configuration[capturingSquare[i][ii]]),configuration[capturingSquare[i][ii]].slice(0,1))){
-                        console.log('not today motherfucker',configuration[capturingSquare[i][ii]],capturingSquare[i][ii])
-                        break
-                    }
-                }
-            }
-        
+        let knightSquares = [[2,1],[2,-1],[1,2],[1,-2],[-2,1],[-2,-1],[-1,2],[-1,-2]]
 
+        for(let ii = 0;ii<knightSquares.length;ii++){
+            let targetRow = originRow+knightSquares[ii][0]
+            let targetColumn = originColumn+knightSquares[ii][1]
+            let posi = toNotation(targetColumn,targetRow)
+
+            
+            if(configuration[posi] == (player+'n')){
+                    if(!Check(possibleconfig(config,posi,checkingSquare,(player+'n')),player)){
+                        return true
+                    }
+            }
         }
-     }
+
+        for(ii in capturingSquare[t]){
+            
+            if(t == 'forwardSquares'){
+                if(configuration[capturingSquare[t][ii]] == (player+'q') ||
+                configuration[capturingSquare[t][ii]] == (player+'r')){
+                    if(!Check(possibleconfig(config,capturingSquare[t][ii],checkingSquare,configuration[capturingSquare[t][ii]]),configuration[capturingSquare[t][ii]].slice(0,1))){
+                        // console.log("forwardSquares")
+                        return true
+                    }
+                }
+            }
+            
+
+            if(t == 'backwardSquares'){
+                if(configuration[capturingSquare[t][ii]] == (player+'q') ||
+                configuration[capturingSquare[t][ii]] == (player+'r')){
+                    if(!Check(possibleconfig(config,capturingSquare[t][ii],checkingSquare,configuration[capturingSquare[t][ii]]),configuration[capturingSquare[t][ii]].slice(0,1))){
+                        // console.log('backwardSquares')
+                        return true
+                    }
+                }
+            }
+            if(t == 'rightSquares'){
+                if(configuration[capturingSquare[t][ii]] == (player+'q') ||
+                configuration[capturingSquare[t][ii]] == (player+'r')){
+                    if(!Check(possibleconfig(config,capturingSquare[t][ii],checkingSquare,configuration[capturingSquare[t][ii]]),configuration[capturingSquare[t][ii]].slice(0,1))){
+                        // console.log('rightSquares')
+                        return true
+                    }
+                }
+            }
+            if(t == 'leftSquares'){
+                if(configuration[capturingSquare[t][ii]] == (player+'q') ||
+                configuration[capturingSquare[t][ii]] == (player+'r')){
+                    if(!Check(possibleconfig(config,capturingSquare[t][ii],checkingSquare,configuration[capturingSquare[t][ii]]),configuration[capturingSquare[t][ii]].slice(0,1))){
+                        // console.log('leftSquares')
+                        return true
+                    }
+                }
+            }
+            if(t == 'diagonalTopRight'){
+                if(player == 'B' && configuration[capturingSquare[t][0]] == 'Bp'){
+                    if(!Check(possibleconfig(config,capturingSquare[t][0],checkingSquare,configuration[capturingSquare[t][0]]),configuration[capturingSquare[t][0]].slice(0,1))){
+                        // console.log('diagonalTopRight')
+                        return true
+                    }
+                }
+                if(configuration[capturingSquare[t][ii]] == (player+'q') ||
+                configuration[capturingSquare[t][ii]] == (player+'b')){
+                    if(!Check(possibleconfig(config,capturingSquare[t][ii],checkingSquare,configuration[capturingSquare[t][ii]]),configuration[capturingSquare[t][ii]].slice(0,1))){
+                        // console.log('diagonalTopRight')
+                        return true
+                    }
+                }
+            }
+            if(t == 'diagonalTopLeft'){
+                if(player == 'B' && configuration[capturingSquare[t][0]] == 'Bp'){
+                    if(!Check(possibleconfig(config,capturingSquare[t][0],checkingSquare,configuration[capturingSquare[t][0]]),configuration[capturingSquare[t][0]].slice(0,1))){
+                        // console.log('diagonalTopLeft')
+                        return true
+                    }
+                }
+                if(configuration[capturingSquare[t][ii]] == (player+'q') ||
+                configuration[capturingSquare[t][ii]] == (player+'b')){
+                    if(!Check(possibleconfig(config,capturingSquare[t][ii],checkingSquare,configuration[capturingSquare[t][ii]]),configuration[capturingSquare[t][ii]].slice(0,1))){
+                        // console.log('diagonalTopLeft')
+                        return true
+                    }
+                }
+            }
+            if(t == 'diagonalBottomRight'){
+                if(player == 'W' && configuration[capturingSquare[t][0]] == 'Wp'){
+                    if(!Check(possibleconfig(config,capturingSquare[i][0],checkingSquare,configuration[capturingSquare[t][0]]),configuration[capturingSquare[t][0]].slice(0,1))){
+                        // console.log('diagonalBottomRight')
+                        return true
+                    }
+                }
+                if(configuration[capturingSquare[t][ii]] == (player+'q') ||
+                configuration[capturingSquare[t][ii]] == (player+'b')){
+                    if(!Check(possibleconfig(config,capturingSquare[t][ii],checkingSquare,configuration[capturingSquare[t][ii]]),configuration[capturingSquare[t][ii]].slice(0,1))){
+                        // console.log('diagonalBottomRight')
+                        return true
+                    }
+                }
+            }
+            if(t == 'diagonalBottomLeft'){
+                if(player == 'W' && configuration[capturingSquare[t][0]] == 'Wp'){
+                    if(!Check(possibleconfig(config,capturingSquare[t][0],checkingSquare,configuration[capturingSquare[t][0]]),configuration[capturingSquare[i][0]].slice(0,1))){
+                        // console.log('diagonalBottomLeft')
+                        return true
+                    }
+                }
+                if(configuration[capturingSquare[t][ii]] == (player+'q') ||
+                configuration[capturingSquare[t][ii]] == (player+'b')){
+                    if(!Check(possibleconfig(config,capturingSquare[t][ii],checkingSquare,configuration[capturingSquare[t][ii]]),configuration[capturingSquare[t][ii]].slice(0,1))){
+                        // console.log('diagonalBottomLeft')
+                        return true
+                    }
+                }
+            }
+            if(configuration[capturingSquare[t][ii]] != null)break
+        }
+    }
+
+
 
 
      //can you block the check
@@ -1554,8 +1582,8 @@ function Checkmate(configuration,player,kingsquare){
 
     for(i in kingToAttacker[direction]){
         if(kingToAttacker[direction][i] == checkingSquare)break
-        console.log('yoyoyouiui',kingToAttacker[direction][i])
         
+
         let originRow = parseInt(kingToAttacker[direction][i].slice(1))
         let originColumn = parseInt(letters.indexOf(kingToAttacker[direction][i].slice(0,1)))+1
 
@@ -1569,79 +1597,41 @@ function Checkmate(configuration,player,kingsquare){
             
             if(configuration[posi] == (player+'n')){
                     if(!Check(possibleconfig(config,posi,kingToAttacker[direction][i],(player+'n')),player)){
-                        console.log('knigt',player+'n',kingToAttacker[direction][i],posi)
+                        return true
                     }
             }
         }
 
-            for(let ii = 0;ii<objectofmovenotation[kingToAttacker[direction][i]][3].length;ii++){
-                if(configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]] != null && 
-                    (configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]] == (player+'q') ||
-                configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]] == (player+'r'))){
-                    console.log('forward')
-                    if(!Check(possibleconfig(config,kingToAttacker[direction][i],objectofmovenotation[kingToAttacker[direction][i]][3][ii],configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]]))){
-                        console.log('nowwwwwww','fore')
-                    }
+        for(let ii = 0;ii<objectofmovenotation[kingToAttacker[direction][i]].length;ii++){
+            for(let iii = 0;iii<objectofmovenotation[kingToAttacker[direction][i]][ii].length;iii++){
+                if((ii==3 || ii==1 || ii==2 || ii==0) && 
+                (configuration[objectofmovenotation[kingToAttacker[direction][i]][ii][iii]] == (player+'q') ||
+                configuration[objectofmovenotation[kingToAttacker[direction][i]][ii][iii]] == (player+'r'))){
+                    return true
                 }
-                if(configuration[objectofmovenotation[kingToAttacker[direction][i]][2][ii]] != null && 
-                    (configuration[objectofmovenotation[kingToAttacker[direction][i]][2][ii]] == (player+'q') ||
-                configuration[objectofmovenotation[kingToAttacker[direction][i]][2][ii]] == (player+'r'))){
-                    console.log('back')
-                    if(!Check(possibleconfig(config,kingToAttacker[direction][i],objectofmovenotation[kingToAttacker[direction][i]][2][ii],configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]]))){
-                        console.log('nowwwwwww','back')
-                    }
+                if((ii==4 || ii==5 || ii==6 || ii==7) && 
+                (configuration[objectofmovenotation[kingToAttacker[direction][i]][ii][iii]] == (player+'q') ||
+                configuration[objectofmovenotation[kingToAttacker[direction][i]][ii][iii]] == (player+'b'))){
+                    return true
                 }
-                if(configuration[objectofmovenotation[kingToAttacker[direction][i]][1][ii]] != null && 
-                    (configuration[objectofmovenotation[kingToAttacker[direction][i]][1][ii]] == (player+'q') ||
-                configuration[objectofmovenotation[kingToAttacker[direction][i]][1][ii]] == (player+'r'))){
-                    console.log('right')
-                    if(!Check(possibleconfig(config,kingToAttacker[direction][i],objectofmovenotation[kingToAttacker[direction][i]][1][ii],configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]]))){
-                        console.log('nowwwwwww','righ')
-                    }
+                if(ii==3 && player == 'B' && parseInt(kingToAttacker[direction][i].slice(1))<7 && 
+                ((iii==0 && configuration[objectofmovenotation[kingToAttacker[direction][i]][ii][iii]] == (player+'p')) ||
+                (iii==1 && configuration[objectofmovenotation[kingToAttacker[direction][i]][ii][iii]] == (player+'p') &&
+                objectofmovenotation[kingToAttacker[direction][i]][ii][iii].slice(1) == 7))){
+                    return true
                 }
-                if(configuration[objectofmovenotation[kingToAttacker[direction][i]][0][ii]] != null && 
-                    (configuration[objectofmovenotation[kingToAttacker[direction][i]][0][ii]] == (player+'q') ||
-                configuration[objectofmovenotation[kingToAttacker[direction][i]][0][ii]] == (player+'r'))){
-                    console.log('left')
-                    if(!Check(possibleconfig(config,kingToAttacker[direction][i],objectofmovenotation[kingToAttacker[direction][i]][0][ii],configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]]))){
-                        console.log('nowwwwwww','left')
-                    }
+                if(ii==2 && player == 'W' && parseInt(kingToAttacker[direction][i].slice(1))>2 && 
+                ((iii==0 && configuration[objectofmovenotation[kingToAttacker[direction][i]][ii][iii]] == (player+'p')) ||
+                (iii==1 && configuration[objectofmovenotation[kingToAttacker[direction][i]][ii][iii]] == (player+'p') &&
+                objectofmovenotation[kingToAttacker[direction][i]][ii][iii].slice(1) == 2))){
+                    return true
                 }
-                if(configuration[objectofmovenotation[kingToAttacker[direction][i]][7][ii]] != null && 
-                    (configuration[objectofmovenotation[kingToAttacker[direction][i]][7][ii]] == (player+'q') ||
-                configuration[objectofmovenotation[kingToAttacker[direction][i]][7][ii]] == (player+'b'))){
-                    console.log('topright')
-                    if(!Check(possibleconfig(config,kingToAttacker[direction][i],objectofmovenotation[kingToAttacker[direction][i]][7][ii],configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]]))){
-                        console.log('nowwwwwww',"toprigh")
-                    }
+                if(configuration[objectofmovenotation[kingToAttacker[direction][i]][ii][iii]] != null){
+                    break
                 }
-                if(configuration[objectofmovenotation[kingToAttacker[direction][i]][6][ii]] != null && 
-                    (configuration[objectofmovenotation[kingToAttacker[direction][i]][6][ii]] == (player+'q') ||
-                configuration[objectofmovenotation[kingToAttacker[direction][i]][6][ii]] == (player+'b'))){
-                    console.log('topleft')
-                    if(!Check(possibleconfig(config,kingToAttacker[direction][i],objectofmovenotation[kingToAttacker[direction][i]][6][ii],configuration[objectofmovenotation[kingToAttacker[direction][i]][3][ii]]))){
-                        console.log('nowwwwwww','topleft')
-                    }
-                }
-                if(configuration[objectofmovenotation[kingToAttacker[direction][i]][5][ii]] != null && 
-                    (configuration[objectofmovenotation[kingToAttacker[direction][i]][5][ii]] == (player+'q') ||
-                configuration[objectofmovenotation[kingToAttacker[direction][i]][5][ii]] == (player+'b'))){
-                    console.log('bottomright')
-                    if(!Check(possibleconfig(config,kingToAttacker[direction][i],objectofmovenotation[kingToAttacker[direction][i]][5][ii],configuration[objectofmovenotation[kingToAttacker[direction][i]][5][ii]]))){
-                        console.log('nowwwwwww','bottomright')
-                    }
-                }
-                if(configuration[objectofmovenotation[kingToAttacker[direction][i]][4][ii]] != null && 
-                    (configuration[objectofmovenotation[kingToAttacker[direction][i]][4][ii]] == (player+'q') ||
-                configuration[objectofmovenotation[kingToAttacker[direction][i]][4][ii]] == (player+'b'))){
-                    console.log('bottomleft')
-                    if(!Check(possibleconfig(config,kingToAttacker[direction][i],objectofmovenotation[kingToAttacker[direction][i]][4][ii],configuration[objectofmovenotation[kingToAttacker[direction][i]][4][ii]]))){
-                        console.log('nowwwwwww','bottomleft')
-                    }
-                }
-
             }
+        }
 
     }
-
+ return false
 }
