@@ -449,6 +449,22 @@ function CastlingRights_Ability(piece,origin,target){
             }
         }
     }
+    if(piece.slice(0,1) == 'W'){
+        if(target == 'h8'){
+            BkCastling = false
+        }
+        if(target == 'a8'){
+            BqCastling = false
+        }
+    }
+    if(piece.slice(0,1) == 'B'){
+        if(target == 'h1'){
+            WkCastling = false
+        }
+        if(target == 'a1'){
+            WqCastling = false
+        }
+    }
 }
 
 function canCastle(piece,side,config){
@@ -702,24 +718,34 @@ window.onmouseup = function(e){
         }
     }()
 
-    
+    // what to do in case of stalemate
+    if(playerInChecked && !Check(config,playerInChecked)){
+        if(!stalemate(config,playerInChecked)){
+            console.log('stalemate')
+        }
+    }
+
+    // check of Checkmate and handle it
     if(Check(config,playerInChecked)){
         Check(config,playerInChecked,'dooit')
-        Checkmate(config,playerInChecked,kingsquare)
-        console.log('check',Checkmate(config,playerInChecked,kingsquare))
-        if(!Checkmate(config,playerInChecked,kingsquare)){
+
+        if(carryobj && !Checkmate(config,playerInChecked,kingsquare)){
             console.log('checkmate')
+            endGame(carryobj.slice(0,1))
         }
+
         let king 
         if(playerInChecked == 'W')king = document.getElementById(wKing)
         if(playerInChecked == 'B')king = document.getElementById(bKing)
         king.classList.add('inCheck')
     }
 
+
     let allSquare = document.querySelectorAll('.square')
     for(let i = 0;i<64;i++){
         allSquare[i].classList.remove('over')
     }
+
     let allImg = document.querySelectorAll(".piece")
     if(t0Img && document.body.contains(t0Img))document.body.removeChild(t0Img)
     if(tImg && document.body.contains(tImg))document.body.removeChild(tImg)
@@ -728,8 +754,20 @@ window.onmouseup = function(e){
     for(let i = 0;i<allImg.length;i++){
         allImg[i].style.opacity= 1
     }
+
     carryobj = null
     originalSquare = null
+}
+
+function endGame(res){
+    let gameState = document.createElement('div')
+    let result
+    if(res == 'stalemate')result = 'stalemate'
+    if(res == 'W')result = 'white wins'
+    if(res == 'B')result = 'black wins'
+
+    gameState.innerText = result
+    document.body.appendChild(gameState)
 }
 
 
@@ -860,14 +898,17 @@ function pawn(config,originalPosition,targetPosition,id){
     }()
     for(let i = 0;i<firstmovecheck;i++){
         if(forwardSquares.indexOf(targetPosition) == -1)break
-        if(config[targetPosition] != null)return false
+        if(config[forwardSquares[i]] != null)return false
         if(targetPosition == forwardSquares[i])return true
     }
     if(diaganalSquaresRight.length != 0 && 
         config[diaganalSquaresRight[0]] != null &&
+        config[diaganalSquaresLeft[0]] != color &&
         targetPosition == diaganalSquaresRight[0])return true
-        if(diaganalSquaresLeft.length != 0 &&
-            config[diaganalSquaresLeft[0]] != null  &&
+
+    if(diaganalSquaresLeft.length != 0 &&
+        config[diaganalSquaresLeft[0]] != null  &&
+        config[diaganalSquaresLeft[0]] != color &&
         targetPosition == diaganalSquaresLeft[0])return true
 
         return false
@@ -1061,6 +1102,8 @@ function Check(configuration,player,strpos){
                 origin = s
             }
         }
+    
+    if(!origin)return
 
     let forwardSquares = objectofmovenotation[origin][3]
     let backwardSquares = objectofmovenotation[origin][2]
@@ -1090,7 +1133,6 @@ function Check(configuration,player,strpos){
                     checkingPiece = configuration[posi]
                     checkingSquare =  posi
                 }
-                // console.log(posi,'wwwww',configuration[posi])
                 return true
             }
     }
@@ -1103,13 +1145,11 @@ function Check(configuration,player,strpos){
             configuration[forwardSquares[poss]].slice(1,2) == 'b'))break
         
         if(configuration[forwardSquares[0]] && configuration[forwardSquares[0]].slice(1,2) == 'k'){
-                // checkingPiece = {forwardSquares[i]:configuration[forwardSquares[i]]}
                 if(strpos){
                     checkingPiece = configuration[forwardSquares[0]]
                     checkingSquare =  forwardSquares[0]
                     direction = 'forwardSquares'
                 }
-                // console.log(configuration[forwardSquares[0]],'forward1',forwardSquares[0])
                 return true
             }
 
@@ -1121,9 +1161,10 @@ function Check(configuration,player,strpos){
                     checkingSquare = forwardSquares[poss]
                     direction = 'forwardSquares'
                 }
-                // console.log(configuration[forwardSquares[poss]],'forward',forwardSquares[poss])
                 return true
             }
+        if(configuration[forwardSquares[poss]] != null)break
+        
     }
 
     for(poss in backwardSquares){
@@ -1139,7 +1180,6 @@ function Check(configuration,player,strpos){
                 checkingSquare = backwardSquares[poss]
                 direction = 'backwardSquares'
             }
-            // console.log(configuration[backwardSquares[0]],'backward1',backwardSquares[0])
             return true
         }
 
@@ -1151,9 +1191,9 @@ function Check(configuration,player,strpos){
                     checkingSquare = backwardSquares[poss]
                     direction = 'backwardSquares'
                 }
-                // console.log(configuration[backwardSquares[poss]],'backward',backwardSquares[poss])
                 return true
             }
+            if(configuration[backwardSquares[poss]] != null)break
     }
 
     for(poss in rightSquares){
@@ -1169,7 +1209,6 @@ function Check(configuration,player,strpos){
                 checkingSquare = rightSquares[poss]
                 direction = 'rightSquares'
             }
-                // console.log(configuration[rightSquares[poss]],'right1',rightSquares[poss])
                 return true
         }
 
@@ -1181,9 +1220,9 @@ function Check(configuration,player,strpos){
                     checkingSquare = rightSquares[poss]
                     direction = 'rightSquares'
                 }
-                // console.log(configuration[rightSquares[poss]],'right',rightSquares[poss])
                 return true
             }
+        if(configuration[rightSquares[poss]] != null)break
     }
 
     for(poss in leftSquares){
@@ -1199,7 +1238,6 @@ function Check(configuration,player,strpos){
                 checkingSquare = leftSquares[poss]
                 direction = 'leftSquares'
             }
-            // console.log(configuration[leftSquares[poss]],'left1',leftSquares[poss])
             return true
         }
 
@@ -1211,9 +1249,9 @@ function Check(configuration,player,strpos){
                     checkingSquare = leftSquares[poss]
                     direction = 'leftSquares'
                 }
-                // console.log(configuration[leftSquares[poss]],'left1',leftSquares[poss])    
                 return true
             }
+            if(configuration[leftSquares[poss]] != null)break
     }
 
     for(poss in diagonalTopRight){
@@ -1228,7 +1266,6 @@ function Check(configuration,player,strpos){
                 checkingSquare = diagonalTopRight[poss]
                 direction = 'diagonalTopRight'
             }
-            // console.log(configuration[diagonalTopRight[poss]],'topright1',diagonalTopRight[poss])
             return true
         }
 
@@ -1241,7 +1278,6 @@ function Check(configuration,player,strpos){
                     checkingSquare = diagonalTopRight[poss]
                     direction = 'diagonalTopRight'
                 }
-                // console.log(configuration[diagonalTopRight[poss]],'toprightpp',diagonalTopRight[poss])
                 return true
             }
 
@@ -1253,9 +1289,9 @@ function Check(configuration,player,strpos){
                     checkingSquare = diagonalTopRight[poss]
                     direction = 'diagonalTopRight'
                 }
-                // console.log(configuration[diagonalTopRight[poss]],'topright',diagonalTopRight[poss])
                 return true
             }
+        if(configuration[diagonalTopRight[poss]] != null)break
     }
 
     for(poss in diagonalTopLeft){
@@ -1270,7 +1306,6 @@ function Check(configuration,player,strpos){
                 checkingSquare = diagonalTopLeft[poss]
                 direction = 'diagonalTopLeft'
             }
-            // console.log(configuration[diagonalTopLeft[poss]],'topleft1',diagonalTopLeft[poss])
             return true
         }
 
@@ -1283,7 +1318,6 @@ function Check(configuration,player,strpos){
                     checkingSquare = diagonalTopLeft[poss]
                     direction = 'diagonalTopLeft'
                 }
-                // console.log(configuration[diagonalTopLeft[poss]],'topleftpp',diagonalTopLeft[poss])
                 return true
             }
 
@@ -1295,9 +1329,9 @@ function Check(configuration,player,strpos){
                     checkingSquare = diagonalTopLeft[poss]
                     direction = 'diagonalTopLeft'
                 }
-                // console.log(configuration[diagonalTopLeft[poss]],'topleft',diagonalTopLeft[poss])
                 return true
             }
+            if(configuration[diagonalTopLeft[poss]] != null)break
     }
 
     for(poss in diagonalBottomRight){
@@ -1313,7 +1347,6 @@ function Check(configuration,player,strpos){
                 direction = 'diagonalBottomRight'
 
             }
-            // console.log(configuration[diagonalBottomRight[poss]],'bottomright1',diagonalBottomRight[poss])
             return true
         }
 
@@ -1326,7 +1359,6 @@ function Check(configuration,player,strpos){
                     checkingSquare = diagonalBottomRight[poss]
                     direction = 'diagonalBottomRight'
                 }
-                // console.log(configuration[diagonalBottomRight[poss]],'bottomrightpp',diagonalBottomRight[poss])
                 return true
             }
         
@@ -1339,9 +1371,9 @@ function Check(configuration,player,strpos){
                     checkingSquare = diagonalBottomRight[poss]
                     direction = 'diagonalBottomRight'
                 }
-                // console.log(configuration[diagonalBottomRight[poss]],'bottomright',diagonalBottomRight[poss])
                 return true
             }
+            if(configuration[diagonalBottomRight[poss]] != null)break
     }
 
     for(poss in diagonalBottomLeft){
@@ -1356,7 +1388,6 @@ function Check(configuration,player,strpos){
                 checkingSquare = diagonalBottomLeft[poss]
                 direction = 'diagonalBottomLeft'
             }
-            // console.log(configuration[diagonalBottomLeft[poss]],'bottomleft1',diagonalBottomLeft[poss])
             return true
         }
 
@@ -1369,7 +1400,6 @@ function Check(configuration,player,strpos){
                     checkingSquare = diagonalBottomLeft[poss]
                     direction = 'diagonalBottomLeft'
                 }
-                // console.log(configuration[diagonalBottomLeft[poss]],'bottomleftpp',diagonalBottomLeft[poss])
                 return true
             }
 
@@ -1381,9 +1411,9 @@ function Check(configuration,player,strpos){
                     checkingSquare = diagonalBottomLeft[poss]
                     direction = 'diagonalBottomLeft'
                 }
-                // console.log(configuration[diagonalBottomLeft[poss]],'bottomleft',diagonalBottomLeft[poss])
                 return true
             }
+        if(configuration[diagonalBottomLeft[poss]] != null)break
     }
 
 
@@ -1428,8 +1458,6 @@ function Checkmate(configuration,player,kingsquare){
     //can you escape the check
     for(squares in availableKingSquares){
         if(!availableKingSquares[squares])continue
-        // console.log(availableKingSquares[squares],'eeeee',configuration[availableKingSquares[squares]])
-        // console.log(configuration[availableKingSquares[squares]] == null || configuration[availableKingSquares[squares]].slice(0,1) != player ,'trrr',!Check(possibleconfig(configuration,origin,availableKingSquares[squares],(player+'k')),player) )
 
         if(!Check(possibleconfig(configuration,origin,availableKingSquares[squares],(player+'k')),player)){
             if(configuration[availableKingSquares[squares]] == null || configuration[availableKingSquares[squares]].slice(0,1) != player ){
@@ -1464,7 +1492,6 @@ function Checkmate(configuration,player,kingsquare){
                 if(configuration[capturingSquare[t][ii]] == (player+'q') ||
                 configuration[capturingSquare[t][ii]] == (player+'r')){
                     if(!Check(possibleconfig(config,capturingSquare[t][ii],checkingSquare,configuration[capturingSquare[t][ii]]),configuration[capturingSquare[t][ii]].slice(0,1))){
-                        // console.log("forwardSquares")
                         return true
                     }
                 }
@@ -1475,7 +1502,6 @@ function Checkmate(configuration,player,kingsquare){
                 if(configuration[capturingSquare[t][ii]] == (player+'q') ||
                 configuration[capturingSquare[t][ii]] == (player+'r')){
                     if(!Check(possibleconfig(config,capturingSquare[t][ii],checkingSquare,configuration[capturingSquare[t][ii]]),configuration[capturingSquare[t][ii]].slice(0,1))){
-                        // console.log('backwardSquares')
                         return true
                     }
                 }
@@ -1484,7 +1510,6 @@ function Checkmate(configuration,player,kingsquare){
                 if(configuration[capturingSquare[t][ii]] == (player+'q') ||
                 configuration[capturingSquare[t][ii]] == (player+'r')){
                     if(!Check(possibleconfig(config,capturingSquare[t][ii],checkingSquare,configuration[capturingSquare[t][ii]]),configuration[capturingSquare[t][ii]].slice(0,1))){
-                        // console.log('rightSquares')
                         return true
                     }
                 }
@@ -1493,7 +1518,6 @@ function Checkmate(configuration,player,kingsquare){
                 if(configuration[capturingSquare[t][ii]] == (player+'q') ||
                 configuration[capturingSquare[t][ii]] == (player+'r')){
                     if(!Check(possibleconfig(config,capturingSquare[t][ii],checkingSquare,configuration[capturingSquare[t][ii]]),configuration[capturingSquare[t][ii]].slice(0,1))){
-                        // console.log('leftSquares')
                         return true
                     }
                 }
@@ -1501,14 +1525,12 @@ function Checkmate(configuration,player,kingsquare){
             if(t == 'diagonalTopRight'){
                 if(player == 'B' && configuration[capturingSquare[t][0]] == 'Bp'){
                     if(!Check(possibleconfig(config,capturingSquare[t][0],checkingSquare,configuration[capturingSquare[t][0]]),configuration[capturingSquare[t][0]].slice(0,1))){
-                        // console.log('diagonalTopRight')
                         return true
                     }
                 }
                 if(configuration[capturingSquare[t][ii]] == (player+'q') ||
                 configuration[capturingSquare[t][ii]] == (player+'b')){
                     if(!Check(possibleconfig(config,capturingSquare[t][ii],checkingSquare,configuration[capturingSquare[t][ii]]),configuration[capturingSquare[t][ii]].slice(0,1))){
-                        // console.log('diagonalTopRight')
                         return true
                     }
                 }
@@ -1516,14 +1538,12 @@ function Checkmate(configuration,player,kingsquare){
             if(t == 'diagonalTopLeft'){
                 if(player == 'B' && configuration[capturingSquare[t][0]] == 'Bp'){
                     if(!Check(possibleconfig(config,capturingSquare[t][0],checkingSquare,configuration[capturingSquare[t][0]]),configuration[capturingSquare[t][0]].slice(0,1))){
-                        // console.log('diagonalTopLeft')
                         return true
                     }
                 }
                 if(configuration[capturingSquare[t][ii]] == (player+'q') ||
                 configuration[capturingSquare[t][ii]] == (player+'b')){
                     if(!Check(possibleconfig(config,capturingSquare[t][ii],checkingSquare,configuration[capturingSquare[t][ii]]),configuration[capturingSquare[t][ii]].slice(0,1))){
-                        // console.log('diagonalTopLeft')
                         return true
                     }
                 }
@@ -1531,14 +1551,12 @@ function Checkmate(configuration,player,kingsquare){
             if(t == 'diagonalBottomRight'){
                 if(player == 'W' && configuration[capturingSquare[t][0]] == 'Wp'){
                     if(!Check(possibleconfig(config,capturingSquare[i][0],checkingSquare,configuration[capturingSquare[t][0]]),configuration[capturingSquare[t][0]].slice(0,1))){
-                        // console.log('diagonalBottomRight')
                         return true
                     }
                 }
                 if(configuration[capturingSquare[t][ii]] == (player+'q') ||
                 configuration[capturingSquare[t][ii]] == (player+'b')){
                     if(!Check(possibleconfig(config,capturingSquare[t][ii],checkingSquare,configuration[capturingSquare[t][ii]]),configuration[capturingSquare[t][ii]].slice(0,1))){
-                        // console.log('diagonalBottomRight')
                         return true
                     }
                 }
@@ -1546,14 +1564,12 @@ function Checkmate(configuration,player,kingsquare){
             if(t == 'diagonalBottomLeft'){
                 if(player == 'W' && configuration[capturingSquare[t][0]] == 'Wp'){
                     if(!Check(possibleconfig(config,capturingSquare[t][0],checkingSquare,configuration[capturingSquare[t][0]]),configuration[capturingSquare[i][0]].slice(0,1))){
-                        // console.log('diagonalBottomLeft')
                         return true
                     }
                 }
                 if(configuration[capturingSquare[t][ii]] == (player+'q') ||
                 configuration[capturingSquare[t][ii]] == (player+'b')){
                     if(!Check(possibleconfig(config,capturingSquare[t][ii],checkingSquare,configuration[capturingSquare[t][ii]]),configuration[capturingSquare[t][ii]].slice(0,1))){
-                        // console.log('diagonalBottomLeft')
                         return true
                     }
                 }
@@ -1634,4 +1650,174 @@ function Checkmate(configuration,player,kingsquare){
 
     }
  return false
+}
+
+function stalemate(config,player){
+    if(!player) return
+    for(i in config){
+        if(config[i] != null && config[i].slice(0,1) == player){
+            if(config[i] == (player+'k')){
+                let kingSq = {
+                    forwardSquares : objectofmovenotation[i][3][0],
+                    backwardSquares : objectofmovenotation[i][2][0],
+                    rightSquares : objectofmovenotation[i][1][0],
+                    leftSquares : objectofmovenotation[i][0][0],
+                    diagonalTopRight : objectofmovenotation[i][7][0],
+                    diagonalTopLeft : objectofmovenotation[i][6][0],
+                    diagonalBottomRight : objectofmovenotation[i][5][0],
+                    diagonalBottomLeft : objectofmovenotation[i][4][0]
+            }
+            for(square in kingSq){
+                if((config[square] == null || config[square].slice(0,1) != player) && 
+                !Check(possibleconfig(config,i,square,(player+'k')),player))return true
+            }
+        }
+            if(config[i] == (player+'p')){
+
+                if(player == 'B'){
+                    //checks if there is nothing infront of the pawn and if moving there will result in being in check
+                    if(i.slice(1) == 7){
+                        if(config[i.slice(0,1)+6] == null && !Check(possibleconfig(config,i,(i.slice(0,1)+6),'Bp'),player))return true
+                        if(config[i.slice(0,1)+6] == null && config[i.slice(0,1)+5] == null && 
+                        !Check(possibleconfig(config,i,(i.slice(0,1)+5),'Bp'),player))return true
+                    }
+                    if(i.slice(1) != 7){
+                        if(config[i.slice(0,1)+(parseInt(i.slice(1))-1)] == null && 
+                        !Check(possibleconfig(config,i,(i.slice(0,1)+(parseInt(i.slice(1))-1)),'Bp'),player))return true
+                    }
+                    // Check if there is an enemy piece at the immediate diagonal of the pawn and if taking it will result in being in check
+                    if(((config[letters[letters.indexOf(i.slice(0,1))+1]+(parseInt(i.slice(1))-1)] != null &&
+                    config[letters[letters.indexOf(i.slice(0,1))+1]+(parseInt(i.slice(1))-1)].slice(0,1) != player) &&
+                    !Check(possibleconfig(config,i,(letters[letters.indexOf(i.slice(0,1))+1]+(parseInt(i.slice(1))-1)),(player+'p')),player)) ||
+                    ((config[letters[letters.indexOf(i.slice(0,1))-1]+(parseInt(i.slice(1))-1)] != null &&
+                    config[letters[letters.indexOf(i.slice(0,1))-1]+(parseInt(i.slice(1))-1)].slice(0,1) != player) &&
+                    !Check(possibleconfig(config,i,(letters[letters.indexOf(i.slice(0,1))-1]+(parseInt(i.slice(1))-1)),(player+'p')),player)))return true
+                    
+                }
+                if(player == 'W'){
+                    //checks if there is nothing infront of the pawn and if moving there will result in being in check
+                    if(i.slice(1) == 2){
+                        if(config[i.slice(0,1)+3] == null && !Check(possibleconfig(config,i,(i.slice(0,1)+3),'Wp'),player))return true
+                        if(config[i.slice(0,1)+3] == null && config[i.slice(0,1)+4] == null && 
+                        !Check(possibleconfig(config,i,(i.slice(0,1)+4),'Wp'),player))return true
+                    }else{
+                        if(config[i.slice(0,1)+(parseInt(i.slice(1))+1)] == null && 
+                        !Check(possibleconfig(config,i,(i.slice(0,1)+(parseInt(i.slice(1))+1)),'Wp'),player))return true
+                    }
+                    // Check if there is an enemy piece at the immediate diagonal of the pawn and if taking it will result in being in check
+                    if(((config[letters[letters.indexOf(i.slice(0,1))+1]+(parseInt(i.slice(1))+1)] != null &&
+                    config[letters[letters.indexOf(i.slice(0,1))+1]+(parseInt(i.slice(1))+1)].slice(0,1) != player) &&
+                    !Check(possibleconfig(config,i,(letters[letters.indexOf(i.slice(0,1))+1]+(parseInt(i.slice(1))+1)),(player+'p')),player)) ||
+                    ((config[letters[letters.indexOf(i.slice(0,1))-1]+(parseInt(i.slice(1))+1)] != null &&
+                    config[letters[letters.indexOf(i.slice(0,1))-1]+(parseInt(i.slice(1))+1)].slice(0,1) != player) &&
+                    !Check(possibleconfig(config,i,(letters[letters.indexOf(i.slice(0,1))-1]+(parseInt(i.slice(1))+1)),(player+'p')),player)))return true
+                }
+            }
+            if(config[i] == (player+'r')){
+                for(let ii = (parseInt(i.slice(1))-1);ii>0;ii--){
+                    if((config[i.slice(0,1)+ii] == null || config[i.slice(0,1)+ii].slice(0,1) != player) && 
+                    !Check(possibleconfig(config,i,(i.slice(0,1)+ii),(player+'r')),player))return true
+                    if(config[i.slice(0,1)+ii] != null)break
+                }
+                for(let ii = (parseInt(i.slice(1)));ii<=8;ii++){
+                    if((config[i.slice(0,1)+ii] == null || config[i.slice(0,1)+ii].slice(0,1) != player) && 
+                    !Check(possibleconfig(config,i,(i.slice(0,1)+ii),(player+'r')),player))return true
+                    if(config[i.slice(0,1)+ii] != null)break 
+                }
+                for(let ii = (letters.indexOf(i.slice(0,1))+1);ii<8;ii++){
+                    if((config[letters[ii]+i.slice(1)] == null || config[letters[ii]+i.slice(1)].slice(0,1) != player) &&
+                    !Check(possibleconfig(config,i,(letters[ii]+i.slice(1)),(player+'r')),player))return true
+                    if(config[letters[ii]+i.slice(1)] != null)break
+                }
+                for(let ii = (letters.indexOf(i.slice(0,1))-1);ii>=0;ii--){
+                    if((config[letters[ii]+i.slice(1)] == null || config[letters[ii]+i.slice(1)].slice(0,1) != player) &&
+                    !Check(possibleconfig(config,i,(letters[ii]+i.slice(1)),(player+'r')),player))return true
+                    if(config[letters[ii]+i.slice(1)] != null)break
+                }
+            }
+            if(config[i] == (player+'b')){
+                let j, k
+                for(j=parseInt(letters.indexOf(i.slice(0,1)))+1,k=parseInt(i.slice(1))+1;j<8 && k<=8;j++,k++){
+                    if((config[letters[j]+k] == null || config[letters[j]+k].slice(0,1) != player) &&
+                    !Check(possibleconfig(config,i,(letters[j]+k),(player+'b'))))return true
+                    if(config[letters[j]+k] != null)break
+                }
+                for(j=parseInt(letters.indexOf(i.slice(0,1)))-1,k=parseInt(i.slice(1))-1;j>=0 && k>0;j--,k--){
+                    if((config[letters[j]+k] == null || config[letters[j]+k].slice(0,1) != player) &&
+                    !Check(possibleconfig(config,i,(letters[j]+k),(player+'b'))))return true
+                    if(config[letters[j]+k] != null)break
+                }
+                for(j=parseInt(letters.indexOf(i.slice(0,1)))-1,k=parseInt(i.slice(1))+1;j>=0 && k<=8;j--,k++){
+                    if((config[letters[j]+k] == null || config[letters[j]+k].slice(0,1) != player) &&
+                    !Check(possibleconfig(config,i,(letters[j]+k),(player+'b'))))return true
+                    if(config[letters[j]+k] != null)break
+                }
+                for(j=parseInt(letters.indexOf(i.slice(0,1)))+1,k=parseInt(i.slice(1))-1;j<8 && k>0;j++,k--){
+                    if((config[letters[j]+k] == null || config[letters[j]+k].slice(0,1) != player) &&
+                    !Check(possibleconfig(config,i,(letters[j]+k),(player+'b'))))return true
+                    if(config[letters[j]+k] != null)break
+                }
+            }
+            if(config[i] == (player+'q')){
+                for(let ii = (parseInt(i.slice(1))-1);ii>0;ii--){
+                    if((config[i.slice(0,1)+ii] == null || config[i.slice(0,1)+ii].slice(0,1) != player) && 
+                    !Check(possibleconfig(config,i,(i.slice(0,1)+ii),(player+'q')),player))return true
+                    if(config[i.slice(0,1)+ii] != null)break
+                }
+                for(let ii = (parseInt(i.slice(1)));ii<=8;ii++){
+                    if((config[i.slice(0,1)+ii] == null || config[i.slice(0,1)+ii].slice(0,1) != player) && 
+                    !Check(possibleconfig(config,i,(i.slice(0,1)+ii),(player+'q')),player))return true
+                    if(config[i.slice(0,1)+ii] != null)break 
+                }
+                for(let ii = (letters.indexOf(i.slice(0,1))+1);ii<8;ii++){
+                    if((config[letters[ii]+i.slice(1)] == null || config[letters[ii]+i.slice(1)].slice(0,1) != player) &&
+                    !Check(possibleconfig(config,i,(letters[ii]+i.slice(1)),(player+'q')),player))return true
+                    if(config[letters[ii]+i.slice(1)] != null)break
+                }
+                for(let ii = (letters.indexOf(i.slice(0,1))-1);ii>=0;ii--){
+                    if((config[letters[ii]+i.slice(1)] == null || config[letters[ii]+i.slice(1)].slice(0,1) != player) &&
+                    !Check(possibleconfig(config,i,(letters[ii]+i.slice(1)),(player+'q')),player))return true
+                    if(config[letters[ii]+i.slice(1)] != null)break
+                }
+                let j, k
+                for(j=parseInt(letters.indexOf(i.slice(0,1)))+1,k=parseInt(i.slice(1))+1;j<8 && k<=8;j++,k++){
+                    if((config[letters[j]+k] == null || config[letters[j]+k].slice(0,1) != player) &&
+                    !Check(possibleconfig(config,i,(letters[j]+k),(player+'q'))))return true
+                    if(config[letters[j]+k] != null)break
+                }
+                for(j=parseInt(letters.indexOf(i.slice(0,1)))-1,k=parseInt(i.slice(1))-1;j>=0 && k>0;j--,k--){
+                    if((config[letters[j]+k] == null || config[letters[j]+k].slice(0,1) != player) &&
+                    !Check(possibleconfig(config,i,(letters[j]+k),(player+'q'))))return true
+                    if(config[letters[j]+k] != null)break
+                }
+                for(j=parseInt(letters.indexOf(i.slice(0,1)))-1,k=parseInt(i.slice(1))+1;j>=0 && k<=8;j--,k++){
+                    if((config[letters[j]+k] == null || config[letters[j]+k].slice(0,1) != player) &&
+                    !Check(possibleconfig(config,i,(letters[j]+k),(player+'q'))))return true
+                    if(config[letters[j]+k] != null)break
+                }
+                for(j=parseInt(letters.indexOf(i.slice(0,1)))+1,k=parseInt(i.slice(1))-1;j<8 && k>0;j++,k--){
+                    if((config[letters[j]+k] == null || config[letters[j]+k].slice(0,1) != player) &&
+                    !Check(possibleconfig(config,i,(letters[j]+k),(player+'q'))))return true
+                    if(config[letters[j]+k] != null)break
+                }
+            }
+            if(config[i] == (player+'n')){
+                let originalRow = parseInt(i.slice(1))
+                let originalColumn = parseInt(letters.indexOf(i.slice(0,1)))+1
+        
+                let knightSquares = [[2,1],[2,-1],[1,2],[1,-2],[-2,1],[-2,-1],[-1,2],[-1,-2]]
+        
+                for(let ii = 0;ii<knightSquares.length;ii++){
+                    let targetRow = originalRow+knightSquares[ii][0]
+                    let targetColumn = originalColumn+knightSquares[ii][1]
+                    if(targetRow>8 || targetColumn>8 || targetRow<0 || targetColumn<0)continue
+                    let posi = toNotation(targetColumn,targetRow)
+                    
+                    if((config[posi] == null || config[posi].slice(1,0) != player) &&
+                    !Check(possibleconfig(config,i,posi,(player+'n')),player))return true
+                }
+            }
+        }
+    }
+    return false
 }
